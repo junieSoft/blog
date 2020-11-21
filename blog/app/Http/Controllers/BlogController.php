@@ -16,7 +16,10 @@ class BlogController extends Controller
      */
     public function index(Request $request)
     {
-        $data = Blog::simplePaginate($request->has('limit') ? $request->limit : 5);
+        $data = Blog::simplePaginate($request->has('limit') ? $request->limit : 15);
+        foreach($data as $img){
+            $img->image = url($img->image);
+        }
         return response()->json($data); 
     }
 
@@ -28,14 +31,33 @@ class BlogController extends Controller
     public function create(Request $request)
     {
         $this->validate($request->all(), [
-            'name'=>'required'
+            'name'=>'required',
+            'blog_categorie_id'=>'required'
         ]);
         $data = [];
         $data = array_merge($data, $request->only([
             'name',
             'description',
-            'image'
+            'image',
+            'blog_categorie_id'
         ]));
+
+        $path1 = " ";
+        if(isset($request->image)){
+            $image = $request->file('image');
+            if($image != null){
+                $extension = $image->getClientOriginalExtension();
+                $relativeDestination = "uploads/Image";
+                $destinationPath = public_path($relativeDestination);
+                $saveName = "image".time().'.'.$extension;
+                $image->move($destinationPath, $saveName);
+                $path1 = "$relativeDestination/$saveName";
+            }
+        }
+
+        $data['image'] = $path1;
+
+
         $blog = Blog::create($data);
         Return response()->json($blog);
     }
@@ -63,7 +85,7 @@ class BlogController extends Controller
         if (!$blog) {
             $error = new APIError;
             $error->setStatus("404");
-            $error->setCode("blogcategory not found");
+            $error->setCode("blog not found");
             $error->setMessage("l'id $id que vous rechercez n'existe pas!!!");
             return response()->json($error, 404);
         }
@@ -95,7 +117,7 @@ class BlogController extends Controller
         if (!$blog) {
             $error = new APIError;
             $error->setStatus("404");
-            $error->setCode("blogcategory not found");
+            $error->setCode("blog not found");
             $error->setMessage("l'id $id que vous rechercez n'existe pas!!!");
             return response()->json($error, 404);
         }
@@ -104,11 +126,29 @@ class BlogController extends Controller
         $data = array_merge($data, $request->only([
             'name',
             'description',
-            'image'
+            'image',
+            'blog_categorie_id'
         ]));
+
+
+        $path1 = " ";
+        if(isset($request->image)){
+            $image = $request->file('image');
+            if($image != null){
+                $extension = $image->getClientOriginalExtension();
+                $relativeDestination = "uploads/Image";
+                $destinationPath = public_path($relativeDestination);
+                $saveName = "image".time().'.'.$extension;
+                $image->move($destinationPath, $saveName);
+                $path1 = "$relativeDestination/$saveName";
+            }
+        }
+        $data['image'] = $path1;
+
         $blog->name = $data['name'];
         $blog->description = $data['description'];
         $blog->image = $data['image'];
+        $blog->blog_categorie_id = $data['blog_categorie_id'];
         $blog->update();
         return response()->json($blog);
     }
@@ -125,12 +165,12 @@ class BlogController extends Controller
         if (!$blog) {
             $error = new APIError;
             $error->setStatus("404");
-            $error->setCode("blogcategory not found");
+            $error->setCode("blog not found");
             $error->setMessage("l'id $id que vous rechercez n'existe pas!!!");
             return response()->json($error, 404);
         }
         
         $blog->delete();
-        return response()->json('ok!');
+        return response()->json('Element suprimé avec succès!!!');
     }
 }

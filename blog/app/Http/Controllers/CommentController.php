@@ -29,14 +29,17 @@ class CommentController extends Controller
     public function create(Request $request)
     {
         $this->validate($request->all(), [
-            'name'=>'required'
+            'name'=>'required',
+            'email'=>'required|email',
+            'blog_id'=>'required'
         ]);
         $data = [];
         $data = array_merge($data, $request->only([
             'name',
             'email',
             'website',
-            'content'
+            'content',
+            'blog_id'
         ]));
         $comment = Comment::create($data);
         Return response()->json($comment);
@@ -65,7 +68,7 @@ class CommentController extends Controller
         if (!$comment) {
             $error = new APIError;
             $error->setStatus("404");
-            $error->setCode("blogcategory not found");
+            $error->setCode("comment not found");
             $error->setMessage("l'id $id que vous rechercez n'existe pas!!!");
             return response()->json($error, 404);
         }
@@ -97,7 +100,7 @@ class CommentController extends Controller
         if (!$comment) {
             $error = new APIError;
             $error->setStatus("404");
-            $error->setCode("blogcategory not found");
+            $error->setCode("comment not found");
             $error->setMessage("l'id $id que vous rechercez n'existe pas!!!");
             return response()->json($error, 404);
         }
@@ -107,12 +110,14 @@ class CommentController extends Controller
             'name',
             'email',
             'website',
-            'content'
+            'content',
+            'blog_id'
         ]));
         $comment->name = $data['name'];
         $comment->email = $data['email'];
         $comment->website = $data['website'];
         $comment->content = $data['content'];
+        $comment->blog_id = $data['blog_id'];
         $comment->update();
         return response()->json($comment);
     }
@@ -129,12 +134,12 @@ class CommentController extends Controller
         if (!$comment) {
             $error = new APIError;
             $error->setStatus("404");
-            $error->setCode("blogcategory not found");
+            $error->setCode("comment not found");
             $error->setMessage("l'id $id que vous rechercez n'existe pas!!!");
             return response()->json($error, 404);
         }
         
         $comment->delete();
-        return response()->json('ok!');
+        return response()->json('Supression ok!');
     }
 }
