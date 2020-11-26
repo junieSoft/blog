@@ -24,7 +24,7 @@ class ContactMail extends Mailable
 
     /**
      * Build the message.
-     *
+     * @author junietoukem@gmail.com
      * @return $this
      */
     public function build()
