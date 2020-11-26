@@ -89,6 +89,23 @@ class BlogController extends Controller
             $error->setMessage("l'id $id que vous rechercez n'existe pas!!!");
             return response()->json($error, 404);
         }
+
+        $blog->image = url($blog->image);
+        $nbComment = Comment::select(Comment::raw('count(*) as total'))->whereBlogId($id)->first();
+        $blog->nbComment=$nbComment->total;
+        $data = Blog::select('blogs.image','blogs.created_at','blog_categories.id as id_categorie','blog_categories.name','blog_categories.description')
+        ->join('blog_categories','blogs.blog_categorie_id','=','blog_categories.id')
+        ->where(['blog_categories.id' => $blog->blog_categorie_id])
+        ->orderBy('created_at', 'desc')
+        ->get();
+            foreach($data as $date){
+                $date->image = url($date->image);
+            }
+        $blog->blog=$data;
+        $comment = Comment::whereBlogId($id)->orderBy('created_at', 'desc')->first();
+
+        $blog->comment=$comment;
+
         
         return response()->json($blog);
     }
